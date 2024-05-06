@@ -3,7 +3,7 @@
 .Ruserdata
 
 images
-.csv
-.png
+*.csv
+*.png
 ref
 .Rproj

@@ -6,6 +6,7 @@ output: html_document
 ```{r setup, include=FALSE}
 
 library(corrplot)
+library(cowplot)
 library(dplyr)
 library(ggplot2)
 library(rnaturalearth)
@@ -19,11 +20,13 @@ mapBase <- ne_countries(scale = "medium", returnclass = "sf")
 
 source("function/data_catch.nbr_sp.as.column.R")
 
+source("function/data_catch.wgt_sp.as.column.R")
+
 ```
 
 # EVHOE Data
 
-```{r}
+```{r,fig.align='center'}
 
 load("data/EVHOE_1997_2021.RData")
 
@@ -34,9 +37,12 @@ HL_df <- Save_Datras$datras_sp.HL.full
 Survey.data_catch_nbr <- data_catch.nbr_sp.as.column(HL_df) %>%
   mutate(Area = ifelse(lati > 48,"CS","BoB"))
 
+Survey.data_catch_wgt <- data_catch.wgt_sp.as.column(HL_df) %>%
+  mutate(Area = ifelse(lati > 48,"CS","BoB"))
+
 # Plot hauls
-plot_1 <- ggplot(Survey.data_catch_nbr)+
-  geom_point(aes(x=long,y=lati,col=factor(Stratum)))+
+ plot_1 <- ggplot(Survey.data_catch_nbr)+
+  geom_point(aes(x=long,y=lati,col=log(TotalNo_Merluccius_merluccius)))+
   geom_sf(data = mapBase) +
   coord_sf(xlim = c(-12,0), ylim = c(43,52), expand = FALSE) +
   theme_classic()+
@@ -44,9 +50,24 @@ plot_1 <- ggplot(Survey.data_catch_nbr)+
         axis.text.x = element_text(angle=90,vjust=0.5), 
         legend.title = element_blank(),
         plot.title = element_text(hjust = 0.5,face = "bold"))+
-  xlab("")+ylab("")
+  xlab("")+ylab("")+
+  ggtitle("Hake in number")+
+  scale_color_distiller(palette = "Spectral")
 
-plot(plot_1)
+ plot_2 <- ggplot(Survey.data_catch_wgt)+
+  geom_point(aes(x=long,y=lati,col=log(CatchWgt_Merluccius_merluccius)))+
+  geom_sf(data = mapBase) +
+  coord_sf(xlim = c(-12,0), ylim = c(43,52), expand = FALSE) +
+  theme_classic()+
+  theme(panel.spacing.x = unit(6, "mm"),
+        axis.text.x = element_text(angle=90,vjust=0.5), 
+        legend.title = element_blank(),
+        plot.title = element_text(hjust = 0.5,face = "bold"))+
+  xlab("")+ylab("")+
+  ggtitle("Hake in weight")+
+  scale_color_distiller(palette = "Spectral")
+
+plot_grid(plot_1,plot_2)
 
 ```
 
